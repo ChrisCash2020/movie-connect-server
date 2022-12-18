@@ -1,22 +1,40 @@
 const express = require('express')
 const userControllers = require('../controllers/userControllers')
 const router = express.Router()
-
+const multer = require('multer')
+const upload = multer({ dest: './public/uploads/' })
 router.route('/auth/logout').get((req, res) => {
-  res.clearCookie('id')
-  res.status(200).json('cookie id cleared')
+  res.clearCookie('crud-movie-chris')
+  res.status(200).json('cookie cleared')
 })
 
-router.route('/register').post(userControllers.createNewUser)
+router.route('/username_check').post(userControllers.userAvailable)
+
+router
+  .route('/register')
+  .post(upload.single('img'), userControllers.createNewUser)
 
 router.route('/login').post(userControllers.loginUser)
 
 router.route('/auth').get(userControllers.auth)
 
-router.route('/:id').get(userControllers.getUserById)
-
-router.route('/faved').post(userControllers.postFave)
-
 router.route('/matches').post(userControllers.displayMatches)
+
+router
+  .route('/faves/:id')
+  .get(userControllers.findUserFavs)
+  .post(userControllers.saveUserFav)
+
+router
+  .route('/update')
+  .post(upload.single('img'), userControllers.updateUserDetail)
+
+router.route('/room/:uid1/:uid2').get(userControllers.createRoom)
+router.route('/display-rooms/:id').get(userControllers.displayRooms)
+
+router
+  .route('/chats/:id')
+  .post(userControllers.saveChat)
+  .get(userControllers.showChats)
 
 module.exports = router

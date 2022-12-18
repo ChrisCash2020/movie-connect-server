@@ -3,8 +3,11 @@ const bodyParser = require('body-parser')
 const session = require('express-session')
 const express = require('express')
 const cookieParser = require('cookie-parser')
-const app = express()
+const http = require('http')
+const { Server } = require('socket.io')
+const cors = require('cors')
 
+const app = express()
 app.enable('trust proxy')
 
 app.use(express.json({})) // parse json bodies in the request object
@@ -26,22 +29,23 @@ app.use(function (req, res, next) {
 //allow cookie transfers
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }))
+
 app.use(
   session({
     secret: 'secret',
     resave: false,
-    // proxy: true,
-    key: 'crud-mk11-chris',
+    proxy: true,
+    name: 'crud-movie-chris',
     saveUninitialized: false,
     cookie: {
-      expires: 1000 * 3600 * 24,
-      // secure: true, // required for cookies to work on HTTPS
-      // httpOnly: false,
-      // sameSite: 'none',
+      expires: 1000 * 3600 * 24 * 30,
+      secure: true, // required for cookies to work on HTTPS
+      httpOnly: false,
+      sameSite: 'none',
     },
   })
 )
-
+app.use('/public/uploads/', express.static('./public/uploads/'))
 app.use('/users', require('./routes/userRoutes'))
 
 app.use((err, req, res, next) => {
@@ -53,7 +57,38 @@ app.use((err, req, res, next) => {
     error: 'Something went rely wrong',
   })
 })
+const server = http.createServer(app)
 
-// Listen on pc port
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'UPDATE'],
+    credentials: true,
+  },
+})
+
+io.on('connection', (socket) => {
+  console.log(`User Connected: ${socket.id}`)
+
+  socket.on('join_room', (data) => {
+    socket.join(data)
+    console.log(`User with ID: ${socket.id} joined room: ${data}`)
+  })
+
+  socket.on('send_message', (data) => {
+    socket.to(data.roomId).emit('receive_message', data)
+    console.log('sent')
+  })
+
+  socket.on('disconnect', () => {
+    console.log('User Disconnected', socket.id)
+  })
+})
+
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
+
+server.listen(PORT, () => {
+  console.log(`Server running on PORT ${PORT}`)
+})
+// Listen on pc port
+// app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))

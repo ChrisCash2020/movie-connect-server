@@ -1,52 +1,34 @@
 const express = require('express')
 const User = require('../models/User')
 const bcrpyt = require('bcryptjs')
+const fs = require('fs')
+const { json } = require('body-parser')
 
 exports.createNewUser = async (req, res, next) => {
   try {
-    let { username, password, mode, bio, name, gender, preferences, image } =
-      req.body
-    console.log(req.body)
-    const hash = await bcrpyt.hash(password, 10)
-    await User.saveUser(
-      username,
-      hash,
-      mode,
-      bio,
-      name,
-      gender,
-      preferences,
-      image
-    )
-    const [newUser, _] = await User.findNewUser()
-    req.session.user = { id: newUser[0].id, username: newUser[0].username }
-    res.status(200).json(newUser)
+    let { user, pass, stat, bio, name, gen, pref, bday } = req.body
+    let img = req.file.filename
+    const hash = await bcrpyt.hash(pass, 10)
+    await User.saveUser(user, hash, stat, bio, name, gen, pref, img, bday)
+    const [newUser, _] = await User.checkUserCred(user)
+    delete newUser[0].pass
+    req.session.user = newUser[0]
+    res.status(200).json(newUser[0])
   } catch (err) {
     console.log(err)
     next(err)
   }
 }
-exports.getUserById = async (req, res, next) => {
-  let userid = req.params.id
-  try {
-    const [posts, _] = await User.findOneUser(userid)
-    res.status(200).json({ ...posts })
-  } catch (err) {
-    console.log(err)
-    next(err)
-  }
-  exports
-}
-
 exports.loginUser = async (req, res, next) => {
-  let { username, password } = req.body
-  let [user, _] = await User.checkUserCred(username)
-  if (user.length == 1) {
-    const hash = await bcrpyt.compare(password, user[0].password)
+  let { user, pass } = req.body
+  let [checkUser, _] = await User.checkUserCred(user)
+  if (checkUser.length == 1) {
+    console.log(user)
+    const hash = await bcrpyt.compare(pass, checkUser[0].pass)
     if (hash) {
-      delete user[0].password
-      req.session.user = user[0]
-      res.status(200).json(user[0])
+      delete checkUser[0].pass
+      req.session.user = checkUser[0]
+      res.status(200).json(checkUser[0])
     }
   } else {
     res.status(200).json([])
@@ -58,53 +40,128 @@ exports.auth = async (req, res, next) => {
   } else {
     res.send({
       status: false,
-      user: { id: '', username: '', mode: '' },
+      user: {},
     })
   }
 }
 
-exports.postFave = async (req, res, next) => {
-  let { title, mode, preferences, uid1, uid2 } = req.body
-  let message = { message: 'sent' }
-  await User.saveUserFav(title, uid1)
-  if (mode == 'taken') {
-    const [result, _] = await User.checkCoupleMatch(uid1, uid2)
-    message.message = 'no match'
-    if (result.length == 2) {
-      message.message = 'match'
-    }
-    res.status(200).json(message)
+exports.userAvailable = async (req, res, next) => {
+  const { user } = req.body
+  const [result, _] = await User.checkUserCred(user)
+  if (result.length == 0) {
+    res.status(200).json({ message: true })
   } else {
-    const [result, _] = await User.findMovieMatches(title, uid1, preferences)
-    if (result.length > 0) {
-      // a match is found
-      res.status(200).send(result)
-    } else {
-      res.status(200).json(message)
+    res.status(200).json({ message: false })
+  }
+}
+
+exports.updateUserDetail = async (req, res, next) => {
+  const { id } = req.body
+
+  if (req.file) {
+    await User.updateUserDetail('img', req.file.filename, id)
+  }
+  for (const record in req.body) {
+    if (record != 'img' && record != 'id') {
+      await User.updateUserDetail(record, req.body[record], id)
     }
   }
+  const [user, _] = await User.findOneUser(id)
+  delete user[0].pass
+  req.session.user = user[0]
+  res.status(200).json(user[0])
+}
+
+exports.findUserFavs = async (req, res, next) => {
+  let uid = req.params.id
+  const [result, _] = await User.findAllUserLoves(uid)
+  const finalResult = []
+  for (const key of result) {
+    finalResult.push(key.title)
+  }
+  res.status(200).json(finalResult)
+}
+exports.saveUserFav = async (req, res, next) => {
+  let uid = req.params.id
+  let { title, love } = req.body
+  console.log(req.body)
+  await User.saveUserFav(title, uid, love)
+  res.status(200).json('sent')
 }
 
 exports.displayMatches = async (req, res, next) => {
-  let { uid, preferences } = req.body
+  let { uid, pref, gen } = req.body
+  pref = pref == 'Women' ? 'Woman' : pref == 'Men' ? 'Man' : 'Other'
+  gen = gen == 'Woman' ? 'Women' : gen == 'Man' ? 'Men' : 'Other'
   const [result, _] = await User.findAllUserFaves(uid)
+  let [rooms, ___] = await User.findUserRooms(uid)
   let allMatches = []
+  rooms = rooms.map((item) => {
+    if (item.uid1 == uid) {
+      return item.uid2
+    } else {
+      return item.uid1
+    }
+  })
   for (let i = 0; i < result.length; i++) {
-    const [match, _] = await User.findMovieMatches(
+    let [match, _] = await User.findMovieMatches(
       result[i].title,
       uid,
-      preferences
+      pref,
+      gen
     )
-    allMatches.push(match)
+    allMatches.push({
+      id: result[i].title,
+      matches: match.filter((item) => !rooms.includes(item.uid)),
+    })
   }
-  console.log(...allMatches)
-  res.status(200).json(...allMatches)
+  // console.log(...allMatches)
+  res.status(200).json([...allMatches])
 }
 
+// Need to do a check if a room already exists
 exports.createRoom = async (req, res, next) => {
-  let { uid1, uid2 } = req.body
+  let uid1 = req.params.uid1
+  let uid2 = req.params.uid2
+  const [test, ___] = await User.checkRoomExists(uid1, uid2)
+  console.log(test)
+  if (test.length > 0) {
+    res.status(200).json({ message: 'user exists' })
+  } else {
+    const [create, _] = await User.createRoom(uid1, uid2)
+    const [id, __] = await User.getCurrentRoom()
+    const roomId = id[0]['MAX(roomId)']
+    res.status(200).json(roomId)
+  }
+}
 
-  const [create, _] = await User.createRoom(uid1, uid2)
+exports.displayRooms = async (req, res, next) => {
+  let uid = req.params.id
+  const [result, _] = await User.findUserRooms(uid)
+  let allMatches = []
+  for (let i = 0; i < result.length; i++) {
+    const recipientId = result[i].uid1 == uid ? result[i].uid2 : result[i].uid1
+    const [info, __] = await User.findOneUser(recipientId)
+    delete info[0].pass
 
+    const [chats, ___] = await User.getChats(result[i].roomId)
+    allMatches.push({
+      roomId: result[i].roomId,
+      info: info[0],
+      chats: chats,
+    })
+  }
+  res.status(200).json(allMatches)
+}
+
+exports.saveChat = async (req, res, next) => {
+  let roomId = req.params.id
+  let { text, uid, author, time } = req.body
+  const [result, _] = await User.saveChats(text, uid, author, roomId, time)
   res.status(200).json('sent')
+}
+exports.showChats = async (req, res, next) => {
+  let roomId = req.params.id
+  const [chats, ___] = await User.getChats(roomId)
+  res.status(200).json(chats)
 }

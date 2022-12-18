@@ -1,11 +1,5 @@
 const mysql = require('mysql2')
 require('dotenv').config()
 
-const pool = mysql.createPool({
-  // use your local environment when in development
-  host: 'localhost',
-  user: 'root',
-  database: 'movieDB',
-  password: 'password',
-})
+const pool = mysql.createPool(process.env.JAWSDB_URL)
 module.exports = pool.promise()
