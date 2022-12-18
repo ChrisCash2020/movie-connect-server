@@ -61,7 +61,7 @@ const server = http.createServer(app)
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'https://chriscash2020.github.io/movie-client/',
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'UPDATE'],
     credentials: true,
   },
