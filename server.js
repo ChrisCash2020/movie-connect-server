@@ -41,7 +41,7 @@ app.use(
       expires: 1000 * 3600 * 24 * 30,
       secure: true, // required for cookies to work on HTTPS
       httpOnly: false,
-      // sameSite: 'none',
+      sameSite: 'none',
     },
   })
 )
