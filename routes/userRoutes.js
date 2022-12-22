@@ -3,7 +3,7 @@ const userControllers = require('../controllers/userControllers')
 const router = express.Router()
 const multer = require('multer')
 const upload = multer({ dest: './public/uploads/' })
-router.route('/auth/logout').get((req, res) => {
+router.route('/auth/logout').post((req, res) => {
   res.clearCookie('crud-movie-chris')
   res.status(200).json('cookie cleared')
 })
