@@ -10,8 +10,7 @@ exports.createSendToken = (user, req, res) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + 1000 * 3600 * 24 * 30),
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
-    secure: true,
-    sameSite: 'none',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   })
   res.status(200).json(user)
 }
@@ -29,12 +28,12 @@ exports.auth = async (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(400).json({ error: 'Not Authorized' })
+    return res.status(200).json({ error: 'Not Authorized' })
   } else {
     const decoded = jwt.decode(token, {
       complete: true,
     })
-    return res.send({ status: true, user: decoded.payload.id })
+    res.status(200).json({ status: true, user: decoded.payload.id })
   }
 }
 
@@ -51,7 +50,7 @@ exports.protect = async (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(400).json({ error: 'Not Authorized' })
+    return res.status(200).json({ error: 'Not Authorized' })
   }
   const decoded = jwt.decode(token, {
     complete: true,
