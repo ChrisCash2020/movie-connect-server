@@ -2,10 +2,12 @@ const express = require('express')
 const userControllers = require('../controllers/userControllers')
 const router = express.Router()
 const multer = require('multer')
+const session = require('express-session')
 const upload = multer({ dest: './public/uploads/' })
 router.route('/auth/logout').post((req, res) => {
-  delete req.session.user
   res.clearCookie('crud-movie-chris')
+  delete req.session.user
+  req.session.destroy()
   res.status(200).json('cookie cleared')
 })
 
