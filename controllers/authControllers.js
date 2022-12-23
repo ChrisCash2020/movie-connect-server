@@ -10,9 +10,10 @@ exports.createSendToken = (user, req, res) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + 1000 * 3600 * 24 * 30),
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: true,
+    sameSite: 'none',
   })
-  return res.status(200).json(user)
+  res.status(200).json(user)
 }
 
 exports.auth = async (req, res, next) => {
