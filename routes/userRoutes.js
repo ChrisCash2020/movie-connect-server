@@ -6,8 +6,7 @@ const upload = multer({ dest: './public/uploads/' })
 router.route('/auth/logout').post((req, res) => {
   req.logout()
   req.session = null
-  res.clearCookie('crud-movie-chris')
-  res.status(200).json('cookie cleared')
+  res.status(200).json('logout')
 })
 
 router.route('/username_check').post(userControllers.userAvailable)
