@@ -4,7 +4,7 @@ const bcrpyt = require('bcryptjs')
 const { createSendToken } = require('./authControllers')
 const checkAuth = (id, req) => {
   console.log(id, req.userId)
-  return id == req.userId
+  return id != req.userId
 }
 exports.createNewUser = async (req, res, next) => {
   try {
@@ -69,7 +69,6 @@ exports.updateUserDetail = async (req, res, next) => {
 }
 
 exports.findUserFavs = async (req, res, next) => {
-  console.log(req.user)
   let uid = req.params.id
   if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
