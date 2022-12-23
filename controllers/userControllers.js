@@ -3,6 +3,7 @@ const User = require('../models/User')
 const bcrpyt = require('bcryptjs')
 const { createSendToken } = require('./authControllers')
 const checkAuth = (id, req) => {
+  console.log(id, req.userId)
   return id == req.userId
 }
 exports.createNewUser = async (req, res, next) => {
