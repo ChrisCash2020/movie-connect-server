@@ -12,7 +12,7 @@ exports.createSendToken = (user, req, res) => {
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   })
-  res.status(200).json(user)
+  return res.status(200).json(user)
 }
 
 exports.auth = async (req, res, next) => {
@@ -33,7 +33,7 @@ exports.auth = async (req, res, next) => {
     const decoded = jwt.decode(token, {
       complete: true,
     })
-    res.send({ status: true, user: decoded.payload.id })
+    return res.send({ status: true, user: decoded.payload.id })
   }
 }
 
