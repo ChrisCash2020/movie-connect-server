@@ -2,7 +2,9 @@ const express = require('express')
 const User = require('../models/User')
 const bcrpyt = require('bcryptjs')
 const { createSendToken } = require('./authControllers')
-const checkAuth = (id, req) => id !== req.userId
+const checkAuth = (id, req) => {
+  return id == req.userId
+}
 exports.createNewUser = async (req, res, next) => {
   try {
     let { user, pass, stat, bio, name, gen, pref, bday } = req.body
@@ -44,7 +46,7 @@ exports.userAvailable = async (req, res, next) => {
 }
 exports.updateUserDetail = async (req, res, next) => {
   const { id } = req.body
-  if (checkAuth(id, req)) {
+  if (checkAuth(id, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   if (req.file) {
@@ -68,7 +70,7 @@ exports.updateUserDetail = async (req, res, next) => {
 exports.findUserFavs = async (req, res, next) => {
   console.log(req.user)
   let uid = req.params.id
-  if (checkAuth(uid, req)) {
+  if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   const [result, _] = await User.findAllUserLoves(uid)
@@ -80,7 +82,7 @@ exports.findUserFavs = async (req, res, next) => {
 }
 exports.saveUserFav = async (req, res, next) => {
   let uid = req.params.id
-  if (checkAuth(uid, req)) {
+  if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   let { title, love } = req.body
@@ -91,7 +93,7 @@ exports.saveUserFav = async (req, res, next) => {
 
 exports.displayMatches = async (req, res, next) => {
   let { uid, pref, gen } = req.body
-  if (checkAuth(uid, req)) {
+  if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   pref = pref == 'Women' ? 'Woman' : pref == 'Men' ? 'Man' : 'Other'
@@ -125,7 +127,7 @@ exports.displayMatches = async (req, res, next) => {
 exports.createRoom = async (req, res, next) => {
   let uid1 = req.params.uid1
   let uid2 = req.params.uid2
-  if (checkAuth(uid1, req)) {
+  if (checkAuth(uid1, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   const [test, ___] = await User.checkRoomExists(uid1, uid2)
@@ -142,7 +144,7 @@ exports.createRoom = async (req, res, next) => {
 
 exports.displayRooms = async (req, res, next) => {
   let uid = req.params.id
-  if (checkAuth(uid, req)) {
+  if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   const [result, _] = await User.findUserRooms(uid)
@@ -165,7 +167,7 @@ exports.displayRooms = async (req, res, next) => {
 exports.saveChat = async (req, res, next) => {
   let roomId = req.params.id
   let { text, uid, author, time } = req.body
-  if (checkAuth(uid, req)) {
+  if (checkAuth(uid, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   const [result, _] = await User.saveChats(text, uid, author, roomId, time)
@@ -174,7 +176,7 @@ exports.saveChat = async (req, res, next) => {
 exports.showChats = async (req, res, next) => {
   let roomId = req.params.id
   let { id } = req.body
-  if (checkAuth(id, req)) {
+  if (checkAuth(id, req) == true) {
     return res.status(400).json({ error: 'Not Authorized' })
   }
   const [chats, ___] = await User.getChats(roomId)
