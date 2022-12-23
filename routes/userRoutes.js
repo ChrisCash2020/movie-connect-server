@@ -7,7 +7,7 @@ const multer = require('multer')
 const upload = multer({ dest: './public/uploads/' })
 const { sign } = require('jsonwebtoken')
 router.route('/auth/logout').delete((req, res) => {
-  res.set('Authorization', ``)
+  res.set('Authorization', `loggedout`)
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
