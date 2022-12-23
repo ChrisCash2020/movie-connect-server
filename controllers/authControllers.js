@@ -5,7 +5,7 @@ const signToken = (id) => {
     expiresIn: 1000 * 3600 * 24 * 30,
   })
 }
-exports.createSendToken = (user) => {
+exports.createSendToken = (user, res) => {
   const token = signToken(user)
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + 1000 * 3600 * 24 * 30),
