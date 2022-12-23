@@ -170,6 +170,10 @@ exports.saveChat = async (req, res, next) => {
 }
 exports.showChats = async (req, res, next) => {
   let roomId = req.params.id
+  let { id } = req.body
+  if (checkAuth(id, req)) {
+    return res.status(400).json({ error: 'Not Authorized' })
+  }
   const [chats, ___] = await User.getChats(roomId)
   res.status(200).json(chats)
 }
