@@ -25,7 +25,9 @@ exports.createNewUser = async (req, res, next) => {
 
     res.cookie('access-token', accessToken, {
       maxAge: 1000 * 3600 * 24 * 30,
-      httpOnly: true,
+      secure: true,
+      httpOnly: false,
+      sameSite: 'none',
     })
     res.status(200).json(newUser[0])
   } catch (err) {
@@ -45,7 +47,9 @@ exports.loginUser = async (req, res, next) => {
 
       res.cookie('access-token', accessToken, {
         maxAge: 1000 * 3600 * 24 * 30,
-        httpOnly: true,
+        secure: true,
+        httpOnly: false,
+        sameSite: 'none',
       })
       res.status(200).json(checkUser[0])
     }
@@ -101,7 +105,9 @@ exports.updateUserDetail = async (req, res, next) => {
 
   res.cookie('access-token', accessToken, {
     maxAge: 1000 * 3600 * 24 * 30,
-    httpOnly: true,
+    secure: true,
+    httpOnly: false,
+    sameSite: 'none',
   })
   res.status(200).json(user[0])
 }

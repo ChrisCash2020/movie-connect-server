@@ -8,7 +8,7 @@ const { Server } = require('socket.io')
 const cors = require('cors')
 
 const app = express()
-// app.enable('trust proxy')
+app.enable('trust proxy')
 
 app.use(express.json({})) // parse json bodies in the request object
 app.use(function (req, res, next) {
