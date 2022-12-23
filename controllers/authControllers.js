@@ -10,6 +10,8 @@ exports.createSendToken = (user) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + 1000 * 3600 * 24 * 30),
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
+    secure: true,
+    samSite: 'none',
   })
 }
 
