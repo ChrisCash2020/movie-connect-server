@@ -4,9 +4,9 @@ const router = express.Router()
 const multer = require('multer')
 const upload = multer({ dest: './public/uploads/' })
 router.route('/auth/logout').post((req, res) => {
-  req.logout()
-  req.session = null
-  res.status(200).json('logout')
+  delete req.session.user
+  res.clearCookie('crud-movie-chris')
+  res.status(200).json('cookie cleared')
 })
 
 router.route('/username_check').post(userControllers.userAvailable)
