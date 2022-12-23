@@ -4,7 +4,11 @@ const bcrpyt = require('bcryptjs')
 const fs = require('fs')
 const { json } = require('body-parser')
 const { sign, verify, HS256 } = require('jsonwebtoken')
-
+const validateToken = async (req, res, next) => {
+  const accessToken = req.cookies['access-token']
+  if (!accessToken)
+    return res.status(400).json({ error: 'User not Authenticated!' })
+}
 const createTokens = (user) => {
   const accessToken = sign(user, 'jwtsecretplschange')
   return accessToken
@@ -21,7 +25,7 @@ exports.createNewUser = async (req, res, next) => {
 
     res.cookie('access-token', accessToken, {
       maxAge: 1000 * 3600 * 24 * 30,
-      // httpOnly: true,
+      httpOnly: true,
     })
     res.status(200).json(newUser[0])
   } catch (err) {
@@ -41,7 +45,7 @@ exports.loginUser = async (req, res, next) => {
 
       res.cookie('access-token', accessToken, {
         maxAge: 1000 * 3600 * 24 * 30,
-        // httpOnly: true,
+        httpOnly: true,
       })
       res.status(200).json(checkUser[0])
     }
@@ -97,14 +101,14 @@ exports.updateUserDetail = async (req, res, next) => {
 
   res.cookie('access-token', accessToken, {
     maxAge: 1000 * 3600 * 24 * 30,
-    // httpOnly: true,
+    httpOnly: true,
   })
   res.status(200).json(user[0])
 }
 
 exports.findUserFavs = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let uid = req.params.id
   const [result, _] = await User.findAllUserLoves(uid)
@@ -115,8 +119,8 @@ exports.findUserFavs = async (req, res, next) => {
   res.status(200).json(finalResult)
 }
 exports.saveUserFav = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let uid = req.params.id
   let { title, love } = req.body
@@ -126,8 +130,8 @@ exports.saveUserFav = async (req, res, next) => {
 }
 
 exports.displayMatches = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let { uid, pref, gen } = req.body
   pref = pref == 'Women' ? 'Woman' : pref == 'Men' ? 'Man' : 'Other'
@@ -160,8 +164,8 @@ exports.displayMatches = async (req, res, next) => {
 
 // Need to do a check if a room already exists
 exports.createRoom = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
   let uid1 = req.params.uid1
   let uid2 = req.params.uid2
   const [test, ___] = await User.checkRoomExists(uid1, uid2)
@@ -177,8 +181,8 @@ exports.createRoom = async (req, res, next) => {
 }
 
 exports.displayRooms = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let uid = req.params.id
   const [result, _] = await User.findUserRooms(uid)
@@ -199,8 +203,8 @@ exports.displayRooms = async (req, res, next) => {
 }
 
 exports.saveChat = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let roomId = req.params.id
   let { text, uid, author, time } = req.body
@@ -208,8 +212,8 @@ exports.saveChat = async (req, res, next) => {
   res.status(200).json('sent')
 }
 exports.showChats = async (req, res, next) => {
-  // if (!validateToken(req))
-  //   return res.status(400).json({ error: 'User not Authenticated!' })
+  if (!validateToken(req))
+    return res.status(400).json({ error: 'User not Authenticated!' })
 
   let roomId = req.params.id
   const [chats, ___] = await User.getChats(roomId)
