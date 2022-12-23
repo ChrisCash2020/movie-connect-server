@@ -11,23 +11,19 @@ const app = express()
 app.enable('trust proxy')
 
 app.use(express.json({})) // parse json bodies in the request object
-// app.use(function (req, res, next) {
-//   res.header('Access-Control-Allow-Credentials', true)
-//   res.header('Access-Control-Allow-Origin', req.headers.origin)
-//   res.header(
-//     'Access-Control-Allow-Methods',
-//     'GET,PUT,POST,DELETE,UPDATE,OPTIONS'
-//   )
-//   res.header(
-//     'Access-Control-Allow-Headers',
-//     'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
-//   )
-//   next()
-// })
-
-app.use(cors())
-
-app.options('*', cors())
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Credentials', true)
+  res.header('Access-Control-Allow-Origin', req.headers.origin)
+  res.header(
+    'Access-Control-Allow-Methods',
+    'GET, PUT, POST, DELETE, UPDATE, OPTIONS'
+  )
+  res.header(
+    'Access-Control-Allow-Headers',
+    'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
+  )
+  next()
+})
 
 // Middleware
 //allow cookie transfers
@@ -66,7 +62,7 @@ const server = http.createServer(app)
 const io = new Server(server, {
   cors: {
     origin: '*',
-    methods: ['GET', 'PUT', 'POST', 'DELETE', 'UPDATE'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'UPDATE', 'OPTIONS'],
   },
 })
 
