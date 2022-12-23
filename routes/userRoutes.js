@@ -5,6 +5,7 @@ const multer = require('multer')
 const upload = multer({ dest: './public/uploads/' })
 router.route('/auth/logout').post((req, res) => {
   res.clearCookie('crud-movie-chris')
+  req.session.user = {}
   res.status(200).json('cookie cleared')
 })
 
