@@ -7,6 +7,7 @@ const signToken = (id) => {
 }
 exports.createSendToken = (user, res, req) => {
   const token = signToken(user)
+  res.set('Authorization', `Bearer ${token}`)
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + 1000 * 3600 * 24 * 30),
     httpOnly: true, // cookie cannot be accessed or modified in any way by the browser
