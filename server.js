@@ -8,7 +8,7 @@ const { Server } = require('socket.io')
 const cors = require('cors')
 
 const app = express()
-app.enable('trust proxy')
+// app.enable('trust proxy')
 
 app.use(express.json({})) // parse json bodies in the request object
 app.use(function (req, res, next) {
@@ -30,21 +30,21 @@ app.use(function (req, res, next) {
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.use(
-  session({
-    secret: 'secret',
-    resave: false,
-    proxy: true,
-    name: 'crud-movie-chris',
-    saveUninitialized: false,
-    cookie: {
-      expires: 1000 * 3600 * 24 * 30,
-      secure: true, // required for cookies to work on HTTPS
-      httpOnly: false,
-      sameSite: 'none',
-    },
-  })
-)
+// app.use(
+//   session({
+//     secret: 'secret',
+//     resave: false,
+//     proxy: true,
+//     name: 'crud-movie-chris',
+//     saveUninitialized: false,
+//     cookie: {
+//       expires: 1000 * 3600 * 24 * 30,
+//       secure: true, // required for cookies to work on HTTPS
+//       httpOnly: false,
+//       sameSite: 'none',
+//     },
+//   })
+// )
 app.use('/public/uploads/', express.static('./public/uploads/'))
 app.use('/users', require('./routes/userRoutes'))
 

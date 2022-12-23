@@ -2,15 +2,17 @@ const express = require('express')
 const userControllers = require('../controllers/userControllers')
 const router = express.Router()
 const multer = require('multer')
-const session = require('express-session')
 const upload = multer({ dest: './public/uploads/' })
+const { sign } = require('jsonwebtoken')
+const validateToken = async (req, res, next) => {
+  const accessToken = req.cookies['access-token']
+  if (!accessToken)
+    return res.status(400).json({ error: 'User not Authenticated!' })
+}
 router.route('/auth/logout').post((req, res) => {
-  res.clearCookie('crud-movie-chris')
-  delete req.session.user
-  req.session.destroy()
+  res.clearCookie('access-token')
   res.status(200).json('cookie cleared')
 })
-
 router.route('/username_check').post(userControllers.userAvailable)
 
 router
@@ -21,23 +23,25 @@ router.route('/login').post(userControllers.loginUser)
 
 router.route('/auth').get(userControllers.auth)
 
-router.route('/matches').post(userControllers.displayMatches)
+router.route('/matches').post(validateToken, userControllers.displayMatches)
 
 router
   .route('/faves/:id')
-  .get(userControllers.findUserFavs)
-  .post(userControllers.saveUserFav)
+  .get(validateToken, userControllers.findUserFavs)
+  .post(validateToken, userControllers.saveUserFav)
 
 router
   .route('/update')
-  .post(upload.single('img'), userControllers.updateUserDetail)
+  .post(validateToken, upload.single('img'), userControllers.updateUserDetail)
 
-router.route('/room/:uid1/:uid2').get(userControllers.createRoom)
-router.route('/display-rooms/:id').get(userControllers.displayRooms)
+router.route('/room/:uid1/:uid2').get(validateToken, userControllers.createRoom)
+router
+  .route('/display-rooms/:id')
+  .get(validateToken, userControllers.displayRooms)
 
 router
   .route('/chats/:id')
-  .post(userControllers.saveChat)
-  .get(userControllers.showChats)
+  .post(validateToken, userControllers.saveChat)
+  .get(validateToken, userControllers.showChats)
 
 module.exports = router
