@@ -11,7 +11,8 @@ exports.createNewUser = async (req, res, next) => {
     await User.saveUser(user, hash, stat, bio, name, gen, pref, img, bday)
     const [newUser, _] = await User.checkUserCred(user)
     delete newUser[0].pass
-    createSendToken(newUser[0], req, res)
+    createSendToken(newUser[0])
+    res.status(200).json(newUser[0])
   } catch (err) {
     console.log(err)
     next(err)
@@ -25,7 +26,8 @@ exports.loginUser = async (req, res, next) => {
     const hash = await bcrpyt.compare(pass, checkUser[0].pass)
     if (hash) {
       delete checkUser[0].pass
-      createSendToken(checkUser[0], req, res)
+      createSendToken(checkUser[0])
+      res.status(200).json(checkUser[0])
     }
   } else {
     res.status(200).json([])
@@ -59,7 +61,7 @@ exports.updateUserDetail = async (req, res, next) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   })
-  createSendToken(user[0], req, res)
+  createSendToken(user[0])
   res.status(200).json(user[0])
 }
 
